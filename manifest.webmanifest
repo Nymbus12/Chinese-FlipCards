@@ -1,7 +1,7 @@
 {
   "name": "FlipCards",
   "short_name": "FlipCards",
-  "description": "Mandarin vocabulary flip cards",
+  "description": "Simple Chinese Vocabulary Flashcards",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

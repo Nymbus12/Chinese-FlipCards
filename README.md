@@ -1,6 +1,8 @@
 # FlipCards
 
-A small, dependency-free web app for Mandarin vocabulary flip cards, made to be added to the iPhone home screen.
+**Simple Chinese Vocabulary Flashcards**
+
+A small, dependency-free flashcard web app for Chinese (Mandarin) vocabulary, made to be added to the iPhone home screen. Add a word in Chinese, pinyin or English, and FlipCards fills in the pinyin, meaning and audio. HSK 1-5 is built in and it works offline.
 
 - Add a Chinese word (or several, separated by spaces or commas). Pinyin is generated on the device with pinyin-pro; English is fetched automatically (Google Translate free endpoint, MyMemory as fallback) and can be edited.
 - Card front shows the characters, tap the empty card area to flip to pinyin. The Translate button on the pinyin side reveals the English. Speaker on both sides (Web Speech API, zh-CN).

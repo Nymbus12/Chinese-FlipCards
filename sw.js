@@ -1,5 +1,5 @@
 // Offline cache for the app shell. Bump VERSION when files change.
-const VERSION = "v4";
+const VERSION = "v5";
 const SHELL = [
   "./",
   "index.html",
