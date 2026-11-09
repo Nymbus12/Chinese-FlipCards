@@ -1,4 +1,5 @@
 import { icon } from "./icons.js";
+import { speak as speakVoice, stopSpeaking, voiceOptions, onVoicesChanged, getSettings, setSettings, RATES } from "./voice.js";
 import { loadDict, lookup, readings, suggest, onlineSuggest } from "./suggest.js";
 
 /* =========================================================
@@ -112,41 +113,7 @@ async function fillTranslation(w) {
   }
 }
 
-let zhVoice = null;
-function loadVoices() {
-  if (!("speechSynthesis" in window)) return;
-  const vs = speechSynthesis.getVoices();
-  zhVoice =
-    vs.find((v) => /zh[-_]CN/i.test(v.lang) && /tingting|ting-ting/i.test(v.name)) ||
-    vs.find((v) => /zh[-_]CN/i.test(v.lang)) ||
-    vs.find((v) => /^zh/i.test(v.lang) && !/HK|TW/i.test(v.lang)) ||
-    null;
-}
-if ("speechSynthesis" in window) {
-  loadVoices();
-  speechSynthesis.addEventListener?.("voiceschanged", loadVoices);
-}
-
-let audioEl = null;
-function speakFallback(text) {
-  if (!audioEl) audioEl = new Audio();
-  audioEl.src = "https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=zh-CN&q=" + encodeURIComponent(text);
-  audioEl.play().catch(() => toast("Speech is not available"));
-}
-
-function speak(text) {
-  if (!text) return;
-  if (!("speechSynthesis" in window)) return speakFallback(text);
-  speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = "zh-CN";
-  if (zhVoice) u.voice = zhVoice;
-  u.rate = 0.85;
-  u.onerror = (e) => {
-    if (e.error !== "interrupted" && e.error !== "canceled") speakFallback(text);
-  };
-  speechSynthesis.speak(u);
-}
+const speak = (text) => speakVoice(text, () => toast("Speech is not available"));
 
 /* =========================================================
    Helpers
@@ -188,6 +155,7 @@ $("#backBtn").innerHTML = icon("arrow-left", 18) + "Word list";
 $("#regenBtn").innerHTML = icon("refresh-cw", 18) + "Auto-fill";
 $('[data-menu="export"]').innerHTML = icon("download", 20) + "Export backup";
 $('[data-menu="import"]').innerHTML = icon("upload", 20) + "Import backup";
+$('[data-menu="voice"]').innerHTML = icon("volume-2", 20) + "Voice";
 
 /* =========================================================
    List view
@@ -546,12 +514,47 @@ $("#editForm").addEventListener("submit", (e) => {
   renderList();
 });
 
+/* ---------- voice picker ---------- */
+const SAMPLE = "你好，我们一起学习中文吧。";
+
+function renderVoice() {
+  const cur = getSettings();
+  $("#rateSeg").innerHTML = RATES.map(
+    (r) => `<button type="button" class="seg-btn ${cur.rate === r.id ? "on" : ""}" data-rate="${r.id}">${r.label}</button>`
+  ).join("");
+  $("#voiceList").innerHTML = voiceOptions()
+    .map((o) => {
+      const on = (cur.voice || "") === o.id;
+      return `<li><button type="button" class="voice-row ${on ? "on" : ""}" data-voice="${esc(o.id)}">
+        <span class="voice-check">${on ? icon("check", 18, 2.4) : ""}</span>
+        <span class="voice-text"><span class="voice-name">${esc(o.name)}</span><span class="voice-sub">${esc(o.label)}</span></span>
+        <span class="voice-play">${icon("volume-2", 18)}</span>
+      </button></li>`;
+    })
+    .join("");
+}
+function openVoice() {
+  renderVoice();
+  openSheet("#voiceSheet");
+}
+onVoicesChanged(() => !$("#voiceSheet").hidden && renderVoice());
+$("#voiceSheet").addEventListener("click", (e) => {
+  const rate = e.target.closest("[data-rate]");
+  const row = e.target.closest("[data-voice]");
+  if (rate) setSettings({ rate: rate.dataset.rate });
+  else if (row) setSettings({ voice: row.dataset.voice });
+  else return;
+  renderVoice();
+  speak(SAMPLE); // preview with the new choice
+});
+
 /* ---------- backup ---------- */
 $("#menuBtn").addEventListener("click", () => openSheet("#menuSheet"));
 $("#menuSheet").addEventListener("click", async (e) => {
   const b = e.target.closest("[data-menu]");
   if (!b) return;
   if (b.dataset.menu === "import") return $("#importFile").click();
+  if (b.dataset.menu === "voice") return openVoice();
   closeSheets();
   const json = JSON.stringify({ version: 1, exportedAt: new Date().toISOString(), words }, null, 2);
   const name = `flipcards-${new Date().toISOString().slice(0, 10)}.json`;
@@ -632,7 +635,7 @@ function startSession(mode) {
 
 function endSession() {
   session = null;
-  if ("speechSynthesis" in window) speechSynthesis.cancel();
+  stopSpeaking();
   $("#sessionView").classList.remove("active");
   $("#listView").classList.add("active");
   renderList();

@@ -1,11 +1,12 @@
 // Offline cache for the app shell. Bump VERSION when files change.
-const VERSION = "v6";
+const VERSION = "v7";
 const SHELL = [
   "./", // not "index.html": hosts like Cloudflare redirect it to "./", and Safari refuses redirected pages
   "styles.css",
   "app.js",
   "icons.js",
   "suggest.js",
+  "voice.js",
   "data/hsk.json",
   "vendor/pinyin-pro.js",
   "manifest.webmanifest",

@@ -33,6 +33,12 @@ Type pinyin (`nihao`, `nǐhǎo`, `ni3hao3`, `nver` for nǚ ér) or English (`umb
 
 `data/hsk.json` is built from the HSK 2.0 lists in [drkameleon/complete-hsk-vocabulary](https://github.com/drkameleon/complete-hsk-vocabulary) (MIT, see `data/hsk.LICENSE`). To rebuild it, download `wordlists/exclusive/old/1.json` to `5.json` into a folder and run `node tools/build-hsk.mjs <folder>`.
 
+## Voice
+
+Speech uses the voices installed on the device (Web Speech API). By default FlipCards picks the most natural Mandarin voice it finds (Premium, then Enhanced, then Standard) and skips novelty voices. Menu > Voice lets you preview and choose a voice and set the speed (Slow, Normal, Fast); the choice is saved on the device.
+
+On iPhone, download better voices in Settings > Accessibility > Spoken Content > Voices > Chinese (China mainland), for example Lili (Premium) or Tingting (Enhanced), then reopen the app. If no Chinese voice is available, the Google Translate voice is used (online only).
+
 ## Third-party services
 
 Translation, pinyin suggestions and the speech fallback use free, unofficial endpoints (Google Translate, Google Input Tools, Google Translate TTS, MyMemory). They need no API key, but they are not official APIs and can stop working or be rate limited at any time. If that happens, put a small proxy in front of them (for example a Cloudflare Pages Function) or switch to an offline dictionary such as CC-CEDICT. The HSK word list in `data/` keeps working offline either way.

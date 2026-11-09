@@ -128,10 +128,21 @@
   </div>
 
   <div class="sheet" id="menuSheet" hidden>
-    <div class="sheet-title">Backup</div>
+    <div class="sheet-title">Menu</div>
+    <button class="sheet-item" data-menu="voice"></button>
     <button class="sheet-item" data-menu="export"></button>
     <button class="sheet-item" data-menu="import"></button>
     <input type="file" id="importFile" accept="application/json,.json" hidden />
+  </div>
+
+  <div class="sheet" id="voiceSheet" hidden>
+    <div class="sheet-title">Voice</div>
+    <div class="seg" id="rateSeg" role="group" aria-label="Speed"></div>
+    <ul class="voice-list" id="voiceList"></ul>
+    <p class="voice-help">
+      For a more natural voice on iPhone, open Settings, then Accessibility, Spoken Content, Voices, Chinese (China mainland),
+      and download an Enhanced or Premium voice such as Lili or Tingting. Then close and reopen FlipCards.
+    </p>
   </div>
 
   <div class="sheet" id="editSheet" hidden>
