@@ -793,6 +793,13 @@ loadDict();
 words.filter((w) => !w.english).forEach(fillTranslation);
 window.addEventListener("online", () => words.filter((w) => !w.english).forEach(fillTranslation));
 
+// iOS can leave the page scrolled after the keyboard closes, which shifts the layout
+document.addEventListener("focusout", () =>
+  setTimeout(() => {
+    if (!document.activeElement || !document.activeElement.matches("input, textarea")) window.scrollTo(0, 0);
+  }, 50)
+);
+
 if ("serviceWorker" in navigator && location.protocol === "https:") {
   navigator.serviceWorker.register("sw.js").catch(() => {});
 }

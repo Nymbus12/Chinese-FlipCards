@@ -18,7 +18,8 @@
 }
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-html, body { margin: 0; height: 100%; }
+/* the page itself never scrolls (iOS misplaces fixed bars when it does); lists scroll inside */
+html, body { margin: 0; height: 100%; overflow: hidden; }
 body {
   background: var(--bg);
   color: var(--text);
@@ -39,11 +40,16 @@ svg { display: block; flex-shrink: 0; }
 
 /* ---------- list view ---------- */
 #listView {
+  position: fixed; inset: 0;
   flex-direction: column;
-  min-height: 100%;
-  padding: calc(var(--safe-top) + 12px) 16px calc(var(--safe-bottom) + 140px);
+  padding: calc(var(--safe-top) + 12px) 16px 0;
   max-width: 640px;
   margin: 0 auto;
+}
+.list-scroll {
+  flex: 1; min-height: 0;
+  overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
+  margin: 0 -16px; padding: 2px 16px 12px; /* full-width scroll area, room for row shadows */
 }
 .topbar { display: flex; align-items: center; justify-content: space-between; padding: 8px 0 14px; }
 .topbar h1 { margin: 0; font-size: 30px; font-weight: 700; letter-spacing: -0.02em; }
@@ -94,10 +100,9 @@ svg { display: block; flex-shrink: 0; }
 .empty { text-align: center; padding: 40px 20px; font-size: 15px; line-height: 1.5; }
 
 .start-bar {
-  position: fixed; left: 0; right: 0; bottom: 0;
-  display: flex; gap: 10px; padding: 12px 16px calc(var(--safe-bottom) + 12px);
-  background: linear-gradient(to top, var(--bg) 70%, rgba(244,244,242,0));
-  max-width: 640px; margin: 0 auto;
+  flex-shrink: 0;
+  display: flex; gap: 10px; padding: 12px 0 calc(var(--safe-bottom) + 12px);
+  background: var(--bg);
 }
 .start-btn {
   flex: 1; height: 54px; border-radius: 16px;

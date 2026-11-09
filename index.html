@@ -51,8 +51,11 @@
       <span class="muted" id="selectedInfo"></span>
     </div>
 
-    <ul id="wordList" class="word-list"></ul>
-    <p id="emptyState" class="empty muted"></p>
+    <!-- only this part scrolls; the start bar below is part of the layout, not position: fixed -->
+    <div class="list-scroll" id="listScroll">
+      <ul id="wordList" class="word-list"></ul>
+      <p id="emptyState" class="empty muted"></p>
+    </div>
 
     <footer class="start-bar">
       <button class="start-btn primary" id="startSelected"></button>
