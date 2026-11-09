@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+  <title>Flip Cards</title>
+  <meta name="theme-color" content="#f4f4f2" />
+  <meta name="color-scheme" content="light" />
+
+  <!-- iPhone home-screen web app -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Flip Cards" />
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+  <link rel="icon" type="image/png" href="icons/icon-192.png" />
+  <link rel="manifest" href="manifest.webmanifest" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- ============ LIST VIEW ============ -->
+  <main id="listView" class="view active">
+    <header class="topbar">
+      <h1>Vocab</h1>
+      <button class="icon-btn" id="menuBtn" aria-label="More"></button>
+    </header>
+
+    <div class="add-wrap">
+      <form id="addForm" class="add-form" autocomplete="off">
+        <input id="addInput" type="text" placeholder="Chinese, pinyin or English" lang="zh-CN" enterkeyhint="done" autocapitalize="off" autocorrect="off" spellcheck="false" />
+        <button type="submit" class="icon-btn solid" id="addBtn" aria-label="Add word"></button>
+      </form>
+      <ul id="suggest" class="suggest" hidden></ul>
+    </div>
+
+    <div class="tabs" role="tablist">
+      <button class="tab active" data-tab="active">Words <span id="countActive">0</span></button>
+      <button class="tab" data-tab="archived">Archived <span id="countArchived">0</span></button>
+    </div>
+
+    <div class="select-row" id="selectRow">
+      <button class="link-btn" id="selectAllBtn"></button>
+      <span class="muted" id="selectedInfo"></span>
+    </div>
+
+    <ul id="wordList" class="word-list"></ul>
+    <p id="emptyState" class="empty muted"></p>
+
+    <footer class="start-bar">
+      <button class="start-btn primary" id="startSelected"></button>
+      <button class="start-btn" id="startMix"></button>
+    </footer>
+  </main>
+
+  <!-- ============ SESSION VIEW ============ -->
+  <section id="sessionView" class="view">
+    <header class="session-top">
+      <button class="icon-btn" id="closeSession" aria-label="End session"></button>
+      <div class="progress-text" id="progressText"></div>
+      <div class="known-count" id="knownCount"></div>
+    </header>
+    <div class="progress"><div class="progress-fill" id="progressFill"></div></div>
+
+    <div class="stage" id="stage">
+      <div class="card-wrap" id="cardWrap">
+        <div class="card" id="card">
+          <div class="face front">
+            <div class="face-top">
+              <button class="icon-btn ghost" data-act="archive" aria-label="Archive"></button>
+              <span class="side-label">Chinese</span>
+              <button class="icon-btn ghost" data-act="speak" aria-label="Speak"></button>
+            </div>
+            <div class="face-body">
+              <div class="hanzi" id="frontHanzi"></div>
+            </div>
+            <div class="face-hint">Tap card to flip</div>
+          </div>
+          <div class="face back">
+            <div class="face-top">
+              <button class="icon-btn ghost" data-act="archive" aria-label="Archive"></button>
+              <span class="side-label">Pinyin</span>
+              <button class="icon-btn ghost" data-act="speak" aria-label="Speak"></button>
+            </div>
+            <div class="face-body">
+              <div class="pinyin" id="backPinyin"></div>
+              <div class="hanzi-small" id="backHanzi"></div>
+              <div class="translation" id="translation"></div>
+              <button class="pill-btn" data-act="translate" id="translateBtn"></button>
+            </div>
+            <div class="face-hint">Tap card to flip back</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="answer-row" id="answerRow">
+        <button class="answer-btn miss" id="missBtn" aria-label="Miss"></button>
+        <button class="answer-btn know" id="knowBtn" aria-label="Know"></button>
+      </div>
+
+      <div class="done" id="doneView" hidden>
+        <div class="done-icon" id="doneIcon"></div>
+        <h2>Session complete</h2>
+        <p class="muted" id="doneStats"></p>
+        <div class="done-actions">
+          <button class="start-btn primary" id="againBtn"></button>
+          <button class="start-btn" id="backBtn"></button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SHEETS ============ -->
+  <div class="sheet-backdrop" id="backdrop" hidden></div>
+
+  <div class="sheet" id="actionSheet" hidden>
+    <div class="sheet-title" id="actionTitle"></div>
+    <button class="sheet-item" data-sheet="edit"></button>
+    <button class="sheet-item" data-sheet="archive"></button>
+    <button class="sheet-item danger" data-sheet="delete"></button>
+  </div>
+
+  <div class="sheet" id="menuSheet" hidden>
+    <div class="sheet-title">Backup</div>
+    <button class="sheet-item" data-menu="export"></button>
+    <button class="sheet-item" data-menu="import"></button>
+    <input type="file" id="importFile" accept="application/json,.json" hidden />
+  </div>
+
+  <div class="sheet" id="editSheet" hidden>
+    <div class="sheet-title">Edit word</div>
+    <form id="editForm" class="edit-form" autocomplete="off">
+      <label>Chinese<input id="editHanzi" lang="zh-CN" /></label>
+      <label>Pinyin<input id="editPinyin" /></label>
+      <label>English<textarea id="editEnglish" rows="2"></textarea></label>
+      <div class="edit-actions">
+        <button type="button" class="start-btn" id="regenBtn"></button>
+        <button type="submit" class="start-btn primary">Save</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="toast" id="toast" hidden></div>
+
+  <script src="vendor/pinyin-pro.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
