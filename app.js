@@ -558,7 +558,7 @@ $("#menuSheet").addEventListener("click", async (e) => {
   const file = new File([json], name, { type: "application/json" });
   if (navigator.canShare && navigator.canShare({ files: [file] })) {
     try {
-      await navigator.share({ files: [file], title: "Flip Cards backup" });
+      await navigator.share({ files: [file], title: "FlipCards backup" });
       return;
     } catch (err) {
       if (err && err.name === "AbortError") return;

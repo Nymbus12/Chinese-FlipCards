@@ -1,4 +1,4 @@
-# Flip Cards (Mandarin)
+# FlipCards
 
 A small, dependency-free web app for Mandarin vocabulary flip cards, made to be added to the iPhone home screen.
 

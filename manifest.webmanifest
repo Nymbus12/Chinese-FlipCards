@@ -1,6 +1,6 @@
 {
-  "name": "Flip Cards",
-  "short_name": "Flip Cards",
+  "name": "FlipCards",
+  "short_name": "FlipCards",
   "description": "Mandarin vocabulary flip cards",
   "start_url": "./",
   "scope": "./",
