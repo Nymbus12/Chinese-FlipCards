@@ -167,7 +167,9 @@ svg { display: block; flex-shrink: 0; }
 }
 .pill-btn:active { background: var(--line); }
 
-.answer-row { display: flex; justify-content: center; gap: 48px; }
+.icon-space { width: 44px; height: 44px; }
+.answer-row { display: flex; justify-content: center; align-items: center; gap: 32px; }
+.answer-btn.speak { width: 56px; height: 56px; color: var(--text); }
 .answer-btn {
   width: 72px; height: 72px; border-radius: 50%;
   display: inline-flex; align-items: center; justify-content: center;

@@ -148,7 +148,7 @@ $("#addBtn").innerHTML = icon("plus");
 $("#closeSession").innerHTML = icon("x");
 $("#missBtn").innerHTML = icon("x", 30, 2.4);
 $("#knowBtn").innerHTML = icon("check", 30, 2.4);
-document.querySelectorAll('[data-act="speak"]').forEach((b) => (b.innerHTML = icon("volume-2")));
+$("#speakBtn").innerHTML = icon("volume-2", 24);
 $("#doneIcon").innerHTML = icon("check", 34, 2.4);
 $("#againBtn").innerHTML = icon("rotate-ccw", 18) + "Study again";
 $("#backBtn").innerHTML = icon("arrow-left", 18) + "Word list";
@@ -744,8 +744,7 @@ card.addEventListener("click", (e) => {
     const w = currentWord();
     if (!w) return;
     const act = b.dataset.act;
-    if (act === "speak") speak(w.hanzi);
-    else if (act === "translate") {
+    if (act === "translate") {
       session.revealed = true;
       if (!w.english) fillTranslation(w);
       renderTranslation();
@@ -762,6 +761,10 @@ card.addEventListener("click", (e) => {
 
 $("#knowBtn").addEventListener("click", () => answer("know"));
 $("#missBtn").addEventListener("click", () => answer("miss"));
+$("#speakBtn").addEventListener("click", () => {
+  const w = currentWord();
+  if (w) speak(w.hanzi);
+});
 $("#closeSession").addEventListener("click", endSession);
 $("#backBtn").addEventListener("click", endSession);
 $("#againBtn").addEventListener("click", () => {
