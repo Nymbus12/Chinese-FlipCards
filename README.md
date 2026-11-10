@@ -37,7 +37,7 @@ Type pinyin (`nihao`, `nǐhǎo`, `ni3hao3`, `nver` for nǚ ér) or English (`umb
 
 Speech uses the voices installed on the device (Web Speech API). By default FlipCards picks the most natural Mandarin voice it finds (Premium, then Enhanced, then Standard) and skips novelty voices. Menu > Voice lets you preview and choose a voice and set the speed (Slow, Normal, Fast); the choice is saved on the device.
 
-On iPhone, download better voices in Settings > Accessibility > Spoken Content > Voices > Chinese (China mainland), for example Lili (Premium) or Tingting (Enhanced), then reopen the app. If no Chinese voice is available, the Google Translate voice is used (online only).
+On iPhone, Safari and home-screen web apps only get the basic voices (Tingting, Meijia); Enhanced and Premium voices downloaded in Settings are not available to web apps. For a more natural voice there, choose Google Translate voice (online only). It is also used automatically if no Chinese voice is available.
 
 ## Third-party services
 
