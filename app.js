@@ -266,7 +266,8 @@ function renderList() {
         : w.pending
         ? "Translating…"
         : '<span>No translation yet</span>';
-      return `<li class="word ${w.pending ? "pending" : ""} ${tab === "active" ? "" : "restore"}" data-id="${w.id}">
+      const off = tab === "active" && !w.selected ? "off" : "";
+      return `<li class="word ${w.pending ? "pending" : ""} ${tab === "active" ? "" : "restore"} ${off}" data-id="${w.id}">
         <div class="swipe-bg" aria-hidden="true">${
           tab === "active" ? icon("archive", 20) + "Archive" : icon("archive-restore", 20) + "Restore"
         }</div>

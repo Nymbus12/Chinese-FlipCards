@@ -129,6 +129,11 @@ svg { display: block; flex-shrink: 0; }
   background: var(--card); border-radius: 10px; padding: 8px 4px 8px 6px;
   box-shadow: 0 1px 2px rgba(0,0,0,0.03);
 }
+/* unticked words fade back so the selected ones stand out */
+.word-card { transition: background 0.15s, box-shadow 0.15s; }
+.word.off .word-card { background: transparent; box-shadow: inset 0 0 0 1px var(--line); }
+.word.off .word-text, .word.off .icon-btn.ghost { opacity: 0.45; transition: opacity 0.15s; }
+.word.swiping.off .word-card { background: var(--card); }
 .word.swiping .word-card, body.no-select { user-select: none; -webkit-user-select: none; }
 .swipe-bg {
   position: absolute; inset: 0; border-radius: 10px; display: none;
