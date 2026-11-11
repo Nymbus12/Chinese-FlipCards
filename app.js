@@ -774,6 +774,83 @@ $("#voiceSheet").addEventListener("click", (e) => {
   speak(SAMPLE); // preview with the new choice
 });
 
+/* ---------- tutorial ---------- */
+$('[data-menu="help"]').innerHTML = icon("circle-help", 20) + "How to use";
+$("#closeTut").innerHTML = icon("x");
+
+const TUT = [
+  {
+    icon: "plus",
+    title: "Add your words",
+    text: "Type Chinese, pinyin or English in the field at the top. A list of matching Chinese words appears; tap one to add it with its pinyin, meaning and audio. You can type several words at once.",
+  },
+  {
+    icon: "list-checks",
+    title: "Your word list",
+    text: "Tick the words you want to study next. Tap the speaker to hear a word. Swipe a word to the right to archive it once you know it; in the Archived tab the same swipe brings it back.",
+  },
+  {
+    icon: "book-open",
+    title: "Two study modes",
+    text: "Vocabulary shows the characters first; tap the card to flip to the pinyin, and Translate reveals the meaning. Handwriting shows the pinyin and meaning instead, and you write the characters in the box with your finger.",
+  },
+  {
+    icon: "sliders-horizontal",
+    title: "Start a session",
+    text: "Selected studies every ticked word. Custom picks a number of random cards and can include archived words. On each card, the cross means missed, the check means known; a missed card comes back later in the deck.",
+  },
+  {
+    icon: "volume-2",
+    title: "Listen",
+    text: "The speaker button under the card reads the word aloud; the list has one per word too. Choose the voice and speed in Menu, then Voice. The Google Translate voice sounds most natural but needs internet.",
+  },
+  {
+    icon: "palette",
+    title: "Make it yours",
+    text: "Menu, then Theme changes the colours. Your words live only on this phone, so use Export backup now and then to save them to a file, and Import backup to load them again.",
+  },
+];
+let tutIndex = 0;
+
+function renderTut() {
+  const s = TUT[tutIndex];
+  $("#tutStep").textContent = `${tutIndex + 1} of ${TUT.length}`;
+  $("#tutIcon").innerHTML = icon(s.icon, 38);
+  $("#tutTitle").textContent = s.title;
+  $("#tutText").textContent = s.text;
+  $("#tutDots").innerHTML = TUT.map((_, i) => `<i class="${i === tutIndex ? "on" : ""}" data-i="${i}"></i>`).join("");
+  $("#tutBack").hidden = tutIndex === 0;
+  $("#tutBack").innerHTML = icon("arrow-left", 18) + "Back";
+  $("#tutNext").innerHTML = tutIndex === TUT.length - 1 ? icon("check", 18) + "Done" : "Next";
+}
+function openTutorial() {
+  closeSheets();
+  tutIndex = 0;
+  renderTut();
+  $("#listView").classList.remove("active");
+  $("#tutorialView").classList.add("active");
+}
+function closeTutorial() {
+  $("#tutorialView").classList.remove("active");
+  $("#listView").classList.add("active");
+}
+$("#closeTut").addEventListener("click", closeTutorial);
+$("#tutBack").addEventListener("click", () => {
+  if (tutIndex > 0) tutIndex--;
+  renderTut();
+});
+$("#tutNext").addEventListener("click", () => {
+  if (tutIndex === TUT.length - 1) return closeTutorial();
+  tutIndex++;
+  renderTut();
+});
+$("#tutDots").addEventListener("click", (e) => {
+  const d = e.target.closest("[data-i]");
+  if (!d) return;
+  tutIndex = +d.dataset.i;
+  renderTut();
+});
+
 /* ---------- backup ---------- */
 $("#menuBtn").addEventListener("click", () => openSheet("#menuSheet"));
 $("#menuSheet").addEventListener("click", async (e) => {
@@ -781,6 +858,7 @@ $("#menuSheet").addEventListener("click", async (e) => {
   if (!b) return;
   if (b.dataset.menu === "import") return $("#importFile").click();
   if (b.dataset.menu === "voice") return openVoice();
+  if (b.dataset.menu === "help") return openTutorial();
   if (b.dataset.menu === "theme") {
     renderThemes();
     return openSheet("#themeSheet");

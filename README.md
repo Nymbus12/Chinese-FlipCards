@@ -10,7 +10,7 @@ A small, dependency-free flashcard web app for Chinese (Mandarin) vocabulary, ma
 - Know removes the card for the rest of the session (works before flipping too). Miss shuffles it back into the remaining deck.
 - Two session types: **Selected** (every selected, non-archived word) and **Custom** (pick how many random cards, 10 to all, and whether archived words are included).
 - Archive known words by swiping a word to the right (with Undo), from the word menu, or straight from a card. Swipe right in Archived to restore.
-- Data lives in the browser's local storage. Use the menu for export/import backups.
+- Data lives in the browser's local storage. The menu has the voice picker, colour themes, export/import backups and a short "How to use" guide.
 
 ## Run locally
 

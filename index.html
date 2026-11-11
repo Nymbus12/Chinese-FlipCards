@@ -154,6 +154,25 @@
     </div>
   </section>
 
+  <!-- ============ TUTORIAL ============ -->
+  <section id="tutorialView" class="view">
+    <header class="session-top">
+      <button class="icon-btn" id="closeTut" aria-label="Close tutorial"></button>
+      <div class="progress-text" id="tutStep"></div>
+      <span class="icon-space"></span>
+    </header>
+    <div class="tut-body">
+      <div class="tut-icon" id="tutIcon"></div>
+      <h2 class="tut-title" id="tutTitle"></h2>
+      <p class="tut-text" id="tutText"></p>
+    </div>
+    <div class="tut-dots" id="tutDots"></div>
+    <div class="tut-nav">
+      <button class="start-btn" id="tutBack"></button>
+      <button class="start-btn primary" id="tutNext"></button>
+    </div>
+  </section>
+
   <!-- ============ SHEETS ============ -->
   <div class="sheet-backdrop" id="backdrop" hidden></div>
 
@@ -168,6 +187,7 @@
     <div class="sheet-title">Menu</div>
     <button class="sheet-item" data-menu="voice"></button>
     <button class="sheet-item" data-menu="theme"></button>
+    <button class="sheet-item" data-menu="help"></button>
     <button class="sheet-item" data-menu="export"></button>
     <button class="sheet-item" data-menu="import"></button>
     <input type="file" id="importFile" accept="application/json,.json" hidden />
