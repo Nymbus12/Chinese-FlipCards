@@ -776,6 +776,7 @@ $("#voiceSheet").addEventListener("click", (e) => {
 
 /* ---------- guided tour (Menu > How to use) ---------- */
 $('[data-menu="help"]').innerHTML = icon("circle-help", 20) + "How to use";
+$('[data-menu="about"]').innerHTML = icon("info", 20) + "About this app";
 $("#tourClose").innerHTML = icon("x", 18);
 
 // each step points at a real element; steps whose element is missing are skipped
@@ -785,7 +786,8 @@ const TOUR = [
   { sel: ".word", text: "Tick a word to study it. Swipe it right to archive. The speaker reads it aloud." },
   { sel: "#modeSeg", text: "Two ways to study: flip cards, or write the characters by hand." },
   { sel: ".start-row", text: "Selected studies every ticked word. Custom picks random cards for you." },
-  { sel: "#menuBtn", text: "Voice, theme, backups and this guide live in the menu." },
+  { sel: "#menuBtn", text: "The menu customises the sound of the voice and the colour theme." },
+  { sel: "#menuBtn", text: "Words are saved only on this device, so they can be lost. Export backup in the menu saves your progress to a file." },
 ];
 let tourSteps = [];
 let tourIndex = 0;
@@ -852,6 +854,7 @@ $("#menuSheet").addEventListener("click", async (e) => {
   if (b.dataset.menu === "import") return $("#importFile").click();
   if (b.dataset.menu === "voice") return openVoice();
   if (b.dataset.menu === "help") return openTutorial();
+  if (b.dataset.menu === "about") return openSheet("#aboutSheet");
   if (b.dataset.menu === "theme") {
     renderThemes();
     return openSheet("#themeSheet");

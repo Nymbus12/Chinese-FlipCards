@@ -10,7 +10,7 @@ A small, dependency-free flashcard web app for Chinese (Mandarin) vocabulary, ma
 - Know removes the card for the rest of the session (works before flipping too). Miss shuffles it back into the remaining deck.
 - Two session types: **Selected** (every selected, non-archived word) and **Custom** (pick how many random cards, 10 to all, and whether archived words are included).
 - Archive known words by swiping a word to the right (with Undo), from the word menu, or straight from a card. Swipe right in Archived to restore.
-- Data lives in the browser's local storage. The menu has the voice picker, colour themes, export/import backups and a short "How to use" guide.
+- Data lives in the browser's local storage. The menu has the voice picker, colour themes, export/import backups, a guided "How to use" tour and an About page. Data is on-device only, so export a backup now and then.
 
 ## Run locally
 
@@ -43,6 +43,10 @@ On iPhone, Safari and home-screen web apps only get the basic voices (Tingting, 
 ## Third-party services
 
 Translation, pinyin suggestions and the speech fallback use free, unofficial endpoints (Google Translate, Google Input Tools, Google Translate TTS, MyMemory). They need no API key, but they are not official APIs and can stop working or be rate limited at any time. If that happens, put a small proxy in front of them (for example a Cloudflare Pages Function) or switch to an offline dictionary such as CC-CEDICT. The HSK word list in `data/` keeps working offline either way.
+
+## Feedback
+
+FlipCards is under development. Comments, feedback and bug reports: scutum12l@gmail.com
 
 ## Licenses
 

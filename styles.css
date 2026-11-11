@@ -380,3 +380,8 @@ svg { display: block; flex-shrink: 0; }
 .tour-count { font-size: 13px; color: var(--muted); }
 .tour-btns { display: flex; gap: 8px; }
 .tour-btns .pill-btn { margin-top: 0; padding: 9px 18px; font-size: 14px; }
+
+/* ---------- about ---------- */
+.about-body { padding: 2px 12px 12px; }
+.about-body p { margin: 10px 0 0; font-size: 15px; line-height: 1.5; }
+.about-body a { color: var(--accent); font-weight: 500; }
