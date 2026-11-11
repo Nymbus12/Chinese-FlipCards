@@ -1,5 +1,5 @@
 // Offline cache for the app shell. Bump VERSION when files change.
-const VERSION = "v18";
+const VERSION = "v19";
 const SHELL = [
   "./", // not "index.html": hosts like Cloudflare redirect it to "./", and Safari refuses redirected pages
   "styles.css",

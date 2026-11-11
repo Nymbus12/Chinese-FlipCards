@@ -774,81 +774,74 @@ $("#voiceSheet").addEventListener("click", (e) => {
   speak(SAMPLE); // preview with the new choice
 });
 
-/* ---------- tutorial ---------- */
+/* ---------- guided tour (Menu > How to use) ---------- */
 $('[data-menu="help"]').innerHTML = icon("circle-help", 20) + "How to use";
-$("#closeTut").innerHTML = icon("x");
+$("#tourClose").innerHTML = icon("x", 18);
 
-const TUT = [
-  {
-    icon: "plus",
-    title: "Add your words",
-    text: "Type Chinese, pinyin or English in the field at the top. A list of matching Chinese words appears; tap one to add it with its pinyin, meaning and audio. You can type several words at once.",
-  },
-  {
-    icon: "list-checks",
-    title: "Your word list",
-    text: "Tick the words you want to study next. Tap the speaker to hear a word. Swipe a word to the right to archive it once you know it; in the Archived tab the same swipe brings it back.",
-  },
-  {
-    icon: "book-open",
-    title: "Two study modes",
-    text: "Vocabulary shows the characters first; tap the card to flip to the pinyin, and Translate reveals the meaning. Handwriting shows the pinyin and meaning instead, and you write the characters in the box with your finger.",
-  },
-  {
-    icon: "sliders-horizontal",
-    title: "Start a session",
-    text: "Selected studies every ticked word. Custom picks a number of random cards and can include archived words. On each card, the cross means missed, the check means known; a missed card comes back later in the deck.",
-  },
-  {
-    icon: "volume-2",
-    title: "Listen",
-    text: "The speaker button under the card reads the word aloud; the list has one per word too. Choose the voice and speed in Menu, then Voice. The Google Translate voice sounds most natural but needs internet.",
-  },
-  {
-    icon: "palette",
-    title: "Make it yours",
-    text: "Menu, then Theme changes the colours. Your words live only on this phone, so use Export backup now and then to save them to a file, and Import backup to load them again.",
-  },
+// each step points at a real element; steps whose element is missing are skipped
+const TOUR = [
+  { sel: ".add-form", text: "Add words here: type Chinese, pinyin or English, then tap a word in the list." },
+  { sel: ".tabs", text: "Your study words on the left, the ones you archived on the right." },
+  { sel: ".word", text: "Tick a word to study it. Swipe it right to archive. The speaker reads it aloud." },
+  { sel: "#modeSeg", text: "Two ways to study: flip cards, or write the characters by hand." },
+  { sel: ".start-row", text: "Selected studies every ticked word. Custom picks random cards for you." },
+  { sel: "#menuBtn", text: "Voice, theme, backups and this guide live in the menu." },
 ];
-let tutIndex = 0;
+let tourSteps = [];
+let tourIndex = 0;
 
-function renderTut() {
-  const s = TUT[tutIndex];
-  $("#tutStep").textContent = `${tutIndex + 1} of ${TUT.length}`;
-  $("#tutIcon").innerHTML = icon(s.icon, 38);
-  $("#tutTitle").textContent = s.title;
-  $("#tutText").textContent = s.text;
-  $("#tutDots").innerHTML = TUT.map((_, i) => `<i class="${i === tutIndex ? "on" : ""}" data-i="${i}"></i>`).join("");
-  $("#tutBack").hidden = tutIndex === 0;
-  $("#tutBack").innerHTML = icon("arrow-left", 18) + "Back";
-  $("#tutNext").innerHTML = tutIndex === TUT.length - 1 ? icon("check", 18) + "Done" : "Next";
+function renderTour() {
+  const st = tourSteps[tourIndex];
+  const el = document.querySelector(st.sel);
+  if (!el) return endTour();
+  if (st.sel === ".word") $("#listScroll").scrollTop = 0; // the row must be in view
+  const pad = 6;
+  const r = el.getBoundingClientRect();
+  const hole = $("#tourHole");
+  hole.style.left = r.left - pad + "px";
+  hole.style.top = r.top - pad + "px";
+  hole.style.width = r.width + pad * 2 + "px";
+  hole.style.height = r.height + pad * 2 + "px";
+  $("#tourText").textContent = st.text;
+  $("#tourStep").textContent = `${tourIndex + 1} of ${tourSteps.length}`;
+  $("#tourBack").hidden = tourIndex === 0;
+  $("#tourNext").textContent = tourIndex === tourSteps.length - 1 ? "Done" : "Next";
+  // the bubble goes under the element when there is room, above it otherwise
+  const tip = $("#tourTip");
+  const w = Math.min(320, innerWidth - 24);
+  tip.style.width = w + "px";
+  const below = r.bottom + pad + 10;
+  const top = below + tip.offsetHeight + 12 <= innerHeight ? below : r.top - pad - 10 - tip.offsetHeight;
+  tip.style.top = Math.max(12, top) + "px";
+  tip.style.left = Math.min(Math.max(12, r.left + r.width / 2 - w / 2), innerWidth - 12 - w) + "px";
 }
 function openTutorial() {
   closeSheets();
-  tutIndex = 0;
-  renderTut();
-  $("#listView").classList.remove("active");
-  $("#tutorialView").classList.add("active");
+  if (tab !== "active") setTab("active");
+  tourSteps = TOUR.filter((st) => document.querySelector(st.sel));
+  tourIndex = 0;
+  $("#tour").hidden = false;
+  renderTour();
 }
-function closeTutorial() {
-  $("#tutorialView").classList.remove("active");
-  $("#listView").classList.add("active");
+function endTour() {
+  $("#tour").hidden = true;
 }
-$("#closeTut").addEventListener("click", closeTutorial);
-$("#tutBack").addEventListener("click", () => {
-  if (tutIndex > 0) tutIndex--;
-  renderTut();
+function stepTour(dir) {
+  tourIndex += dir;
+  if (tourIndex < 0) tourIndex = 0;
+  if (tourIndex >= tourSteps.length) return endTour();
+  renderTour();
+}
+$("#tourClose").addEventListener("click", endTour);
+$("#tourBack").addEventListener("click", () => stepTour(-1));
+$("#tourNext").addEventListener("click", () => stepTour(1));
+// tapping the dimmed part also moves on
+$("#tour").addEventListener("click", (e) => {
+  if (!e.target.closest(".tour-tip")) stepTour(1);
 });
-$("#tutNext").addEventListener("click", () => {
-  if (tutIndex === TUT.length - 1) return closeTutorial();
-  tutIndex++;
-  renderTut();
-});
-$("#tutDots").addEventListener("click", (e) => {
-  const d = e.target.closest("[data-i]");
-  if (!d) return;
-  tutIndex = +d.dataset.i;
-  renderTut();
+window.addEventListener("resize", () => !$("#tour").hidden && renderTour());
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && !$("#tour").hidden) endTour();
 });
 
 /* ---------- backup ---------- */

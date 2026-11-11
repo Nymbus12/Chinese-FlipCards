@@ -154,24 +154,21 @@
     </div>
   </section>
 
-  <!-- ============ TUTORIAL ============ -->
-  <section id="tutorialView" class="view">
-    <header class="session-top">
-      <button class="icon-btn" id="closeTut" aria-label="Close tutorial"></button>
-      <div class="progress-text" id="tutStep"></div>
-      <span class="icon-space"></span>
-    </header>
-    <div class="tut-body">
-      <div class="tut-icon" id="tutIcon"></div>
-      <h2 class="tut-title" id="tutTitle"></h2>
-      <p class="tut-text" id="tutText"></p>
+  <!-- ============ GUIDED TOUR (Menu > How to use) ============ -->
+  <div class="tour" id="tour" hidden>
+    <div class="tour-hole" id="tourHole"></div>
+    <div class="tour-tip" id="tourTip">
+      <button type="button" class="tour-close" id="tourClose" aria-label="Close guide"></button>
+      <p id="tourText"></p>
+      <div class="tour-row">
+        <span class="tour-count" id="tourStep"></span>
+        <div class="tour-btns">
+          <button type="button" class="pill-btn" id="tourBack">Back</button>
+          <button type="button" class="pill-btn dark" id="tourNext">Next</button>
+        </div>
+      </div>
     </div>
-    <div class="tut-dots" id="tutDots"></div>
-    <div class="tut-nav">
-      <button class="start-btn" id="tutBack"></button>
-      <button class="start-btn primary" id="tutNext"></button>
-    </div>
-  </section>
+  </div>
 
   <!-- ============ SHEETS ============ -->
   <div class="sheet-backdrop" id="backdrop" hidden></div>
