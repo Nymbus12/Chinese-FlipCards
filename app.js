@@ -968,10 +968,10 @@ function clearPad() {
   pctx.lineWidth = 1;
   for (let i = 0; i < n; i++) {
     const cx = x + i * size;
-    pctx.strokeStyle = "#dcdcd8";
+    pctx.strokeStyle = "#d9dde3";
     pctx.setLineDash([]);
     pctx.strokeRect(cx + 0.5, y + 0.5, size - 1, size - 1);
-    pctx.strokeStyle = "#e7e7e4";
+    pctx.strokeStyle = "#e4e7ec";
     pctx.setLineDash([5, 5]);
     pctx.beginPath();
     pctx.moveTo(cx + size / 2, y);
@@ -994,7 +994,7 @@ pad.addEventListener("pointerdown", (e) => {
   const p = padPoint(e);
   const { size } = padCell();
   stroke = { id: e.pointerId, last: p, width: Math.max(4, Math.min(12, (padChars > 4 ? 120 : size) * 0.05)) };
-  pctx.fillStyle = "#18181b";
+  pctx.fillStyle = "#14161a";
   pctx.beginPath();
   pctx.arc(p.x, p.y, stroke.width / 2, 0, Math.PI * 2);
   pctx.fill();
@@ -1002,7 +1002,7 @@ pad.addEventListener("pointerdown", (e) => {
 pad.addEventListener("pointermove", (e) => {
   if (!stroke || e.pointerId !== stroke.id) return;
   const pts = e.getCoalescedEvents ? e.getCoalescedEvents() : [e];
-  pctx.strokeStyle = "#18181b";
+  pctx.strokeStyle = "#14161a";
   pctx.lineWidth = stroke.width;
   pctx.lineCap = "round";
   pctx.lineJoin = "round";

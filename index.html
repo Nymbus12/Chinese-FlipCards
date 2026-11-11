@@ -8,7 +8,7 @@
   <meta property="og:title" content="FlipCards | Simple Chinese Vocabulary Flashcards" />
   <meta property="og:description" content="Add a Chinese word, get pinyin, meaning and audio, and study with flip cards. HSK 1-5 built in, works offline." />
   <meta property="og:type" content="website" />
-  <meta name="theme-color" content="#f4f4f2" />
+  <meta name="theme-color" content="#f5f6f8" />
   <meta name="color-scheme" content="light" />
   <!-- Google's speech endpoint refuses requests that carry a referrer -->
   <meta name="referrer" content="no-referrer" />
@@ -31,7 +31,15 @@
   <!-- ============ LIST VIEW ============ -->
   <main id="listView" class="view active">
     <header class="topbar">
-      <h1>Vocab</h1>
+      <h1>
+        <svg class="brand-mark" viewBox="0 0 100 100" aria-hidden="true">
+          <rect width="100" height="100" fill="#d23b2f" />
+          <g stroke="#fff" stroke-width="7" stroke-linecap="square" fill="none" transform="translate(50 50) scale(1.15) translate(-50 -50)">
+            <path d="M46 27V74" /><path d="M46 38H66" /><path d="M29 51H71" /><path d="M48.5 58.5 65 67" />
+          </g>
+        </svg>
+        FlipCards
+      </h1>
       <button class="icon-btn" id="menuBtn" aria-label="More"></button>
     </header>
 
