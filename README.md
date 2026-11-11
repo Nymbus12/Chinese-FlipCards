@@ -5,10 +5,10 @@
 A small, dependency-free flashcard web app for Chinese (Mandarin) vocabulary, made to be added to the iPhone home screen. Add a word in Chinese, pinyin or English, and FlipCards fills in the pinyin, meaning and audio. HSK 1-5 is built in and it works offline.
 
 - Add a Chinese word (or several, separated by spaces or commas). Pinyin is generated on the device with pinyin-pro; English is fetched automatically (Google Translate free endpoint, MyMemory as fallback) and can be edited.
-- Card front shows the characters, tap the empty card area to flip to pinyin. The Translate button on the pinyin side reveals the English. Speaker on both sides (Web Speech API, zh-CN).
+- Card front shows the characters, tap the empty card area to flip to pinyin. The Translate button on the pinyin side reveals the English. Speaker button below the card, next to Miss and Know.
 - Know removes the card for the rest of the session (works before flipping too). Miss shuffles it back into the remaining deck.
-- Two session types: **Selected** (every selected, non-archived word) and **Mix 20** (20 random words from everything, archived included).
-- Archive known words from the list or straight from a card.
+- Two session types: **Selected** (every selected, non-archived word) and **Custom** (pick how many random cards, 10 to all, and whether archived words are included).
+- Archive known words by swiping a word to the right (with Undo), from the word menu, or straight from a card. Swipe right in Archived to restore.
 - Data lives in the browser's local storage. Use the menu for export/import backups.
 
 ## Run locally

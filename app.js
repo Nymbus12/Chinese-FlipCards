@@ -6,7 +6,8 @@ import { loadDict, lookup, readings, suggest, onlineSuggest } from "./suggest.js
    Storage
    ========================================================= */
 const KEY = "flipcards.v1";
-const MIX_SIZE = 20;
+const CUSTOM_KEY = "flipcards.custom";
+const COUNTS = [10, 20, 30, 50, 0]; // 0 = all
 
 function load() {
   try {
@@ -123,12 +124,24 @@ const esc = (s) =>
   String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 
 let toastTimer;
-function toast(msg) {
+/** Short message at the top, or with `action` ({ label, run }) a message with a button near the bottom. */
+function toast(msg, action) {
   const t = $("#toast");
   t.textContent = msg;
+  t.classList.toggle("bottom", !!action);
+  if (action) {
+    const b = document.createElement("button");
+    b.className = "toast-action";
+    b.textContent = action.label;
+    b.onclick = () => {
+      t.hidden = true;
+      action.run();
+    };
+    t.append(b);
+  }
   t.hidden = false;
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => (t.hidden = true), 2200);
+  toastTimer = setTimeout(() => (t.hidden = true), action ? 4000 : 2200);
 }
 
 function shuffle(arr) {
@@ -194,7 +207,11 @@ function renderList() {
         : w.pending
         ? "Translating…"
         : '<span>No translation yet</span>';
-      return `<li class="word ${w.pending ? "pending" : ""}" data-id="${w.id}">
+      return `<li class="word ${w.pending ? "pending" : ""} ${tab === "active" ? "" : "restore"}" data-id="${w.id}">
+        <div class="swipe-bg" aria-hidden="true">${
+          tab === "active" ? icon("archive", 20) + "Archive" : icon("archive-restore", 20) + "Restore"
+        }</div>
+        <div class="word-card">
         ${check}
         <div class="word-text" data-act="${tab === "active" ? "toggle" : ""}">
           <div class="word-zh" lang="zh-CN">${esc(w.hanzi)}</div>
@@ -203,6 +220,7 @@ function renderList() {
         </div>
         <button class="icon-btn ghost" data-act="speak" aria-label="Speak">${icon("volume-2", 20)}</button>
         <button class="icon-btn ghost" data-act="more" aria-label="More">${icon("ellipsis", 20)}</button>
+        </div>
       </li>`;
     })
     .join("");
@@ -212,15 +230,15 @@ function renderList() {
   empty.textContent =
     tab === "active"
       ? words.length
-        ? "Every word is archived. You can still study them with Mix 20."
+        ? "Every word is archived. You can still study them with Custom."
         : "Add your first Chinese word above. Pinyin and English are filled in for you."
       : "Archived words show here. Archive a word you know well so it stops coming up in your selected sessions.";
 
   // start buttons
   $("#startSelected").innerHTML = `${icon("layers", 19)}Selected <small>${selectedCount}</small>`;
   $("#startSelected").disabled = selectedCount === 0;
-  $("#startMix").innerHTML = `${icon("shuffle", 19)}Mix ${Math.min(MIX_SIZE, words.length) || MIX_SIZE}`;
-  $("#startMix").disabled = words.length === 0;
+  $("#startCustom").innerHTML = `${icon("sliders-horizontal", 19)}Custom`;
+  $("#startCustom").disabled = words.length === 0;
 }
 
 function makeWord({ hanzi, pinyin, english }, offset = 0) {
@@ -430,10 +448,101 @@ $("#wordList").addEventListener("click", (e) => {
   }
 });
 
+/* ---------- swipe right to archive (or restore in the Archived tab) ---------- */
+const wordList = $("#wordList");
+let swipe = null;
+let swipedAt = 0;
+
+wordList.addEventListener("pointerdown", (e) => {
+  if (e.pointerType === "mouse" && e.button !== 0) return;
+  const li = e.target.closest(".word");
+  if (!li || li.classList.contains("leaving")) return;
+  swipe = { li, card: li.querySelector(".word-card"), id: e.pointerId, x: e.clientX, y: e.clientY, dx: 0, on: false, t: 0, lastX: e.clientX, v: 0 };
+});
+
+wordList.addEventListener("pointermove", (e) => {
+  const s = swipe;
+  if (!s || e.pointerId !== s.id) return;
+  const dx = e.clientX - s.x;
+  const dy = e.clientY - s.y;
+  if (!s.on) {
+    // vertical first: it's a scroll, leave it alone
+    if (Math.abs(dy) > 10 && Math.abs(dy) > Math.abs(dx)) return (swipe = null);
+    if (dx < 12 || dx < Math.abs(dy) * 1.3) return;
+    s.on = true;
+    s.li.classList.add("swiping");
+    document.body.classList.add("no-select");
+    window.getSelection()?.removeAllRanges();
+    s.card.style.transition = "none";
+    try {
+      s.li.setPointerCapture(e.pointerId);
+    } catch {}
+  }
+  const now = performance.now();
+  if (s.t) s.v = (e.clientX - s.lastX) / Math.max(1, now - s.t); // px per ms
+  s.t = now;
+  s.lastX = e.clientX;
+  s.dx = Math.max(0, dx - 12);
+  s.card.style.transform = `translateX(${s.dx}px)`;
+  s.li.classList.toggle("armed", s.dx > s.li.offsetWidth * 0.35);
+});
+
+function endSwipe(e, cancelled) {
+  const s = swipe;
+  if (!s || e.pointerId !== s.id) return;
+  swipe = null;
+  if (!s.on) return;
+  swipedAt = Date.now();
+  document.body.classList.remove("no-select");
+  const width = s.li.offsetWidth;
+  const go = !cancelled && (s.dx > width * 0.35 || (s.v > 0.6 && s.dx > 40));
+  s.card.style.transition = "transform 0.2s ease";
+  if (!go) {
+    s.card.style.transform = "";
+    setTimeout(() => s.li.classList.remove("swiping", "armed"), 200);
+    return;
+  }
+  s.card.style.transform = `translateX(${width}px)`;
+  // then close the gap
+  setTimeout(() => {
+    s.li.style.height = s.li.offsetHeight + "px";
+    s.li.classList.add("leaving");
+    void s.li.offsetHeight;
+    s.li.style.height = "0px";
+    s.li.style.marginBottom = "-8px"; // swallow the list gap too
+  }, 180);
+  setTimeout(() => toggleArchived(byId(s.li.dataset.id)), 400);
+}
+wordList.addEventListener("pointerup", (e) => endSwipe(e, false));
+wordList.addEventListener("pointercancel", (e) => endSwipe(e, true));
+// a swipe should not also tick the checkbox or press a button
+wordList.addEventListener("click", (e) => {
+  if (Date.now() - swipedAt < 400) e.stopPropagation();
+}, true);
+
+function toggleArchived(w) {
+  if (!w) return renderList();
+  const was = w.archived;
+  w.archived = !was;
+  save();
+  renderList();
+  toast(w.archived ? `${w.hanzi} archived` : `${w.hanzi} moved back to Words`, {
+    label: "Undo",
+    run: () => {
+      const cur = byId(w.id);
+      if (!cur) return;
+      cur.archived = was;
+      save();
+      renderList();
+    },
+  });
+}
+
 /* ---------- sheets ---------- */
 let sheetWord = null;
 function openSheet(id) {
   closeSheets();
+  if ($("#toast").classList.contains("bottom")) $("#toast").hidden = true; // Undo toast would cover the sheet
   $("#backdrop").hidden = false;
   $(id).hidden = false;
 }
@@ -619,12 +728,57 @@ function currentWord() {
   return session && session.deck.length ? byId(session.deck[0]) : null;
 }
 
+/* ---------- custom session ---------- */
+let custom = { count: 20, archived: true };
+try {
+  Object.assign(custom, JSON.parse(localStorage.getItem(CUSTOM_KEY) || "{}"));
+} catch {}
+const customPool = () => (custom.archived ? words : activeWords());
+
+function renderCustom() {
+  const pool = customPool().length;
+  $("#countSeg").innerHTML = COUNTS.map(
+    (n) =>
+      `<button type="button" class="seg-btn ${custom.count === n ? "on" : ""}" data-count="${n}" ${
+        n && n > pool ? "disabled" : ""
+      }>${n || "All"}</button>`
+  ).join("");
+  const nArch = words.length - activeWords().length;
+  $("#archToggle").setAttribute("aria-checked", String(custom.archived));
+  $("#archSub").textContent = `${nArch} archived word${nArch === 1 ? "" : "s"}`;
+  const n = custom.count ? Math.min(custom.count, pool) : pool;
+  const go = $("#customGo");
+  go.disabled = n === 0;
+  go.innerHTML = n ? `${icon("shuffle", 19)}Start ${n} card${n === 1 ? "" : "s"}` : "No words to study";
+}
+function setCustom(patch) {
+  Object.assign(custom, patch);
+  try {
+    localStorage.setItem(CUSTOM_KEY, JSON.stringify(custom));
+  } catch {}
+  renderCustom();
+}
+$("#startCustom").addEventListener("click", () => {
+  renderCustom();
+  openSheet("#customSheet");
+});
+$("#customSheet").addEventListener("click", (e) => {
+  const c = e.target.closest("[data-count]");
+  if (c && !c.disabled) setCustom({ count: Number(c.dataset.count) });
+  else if (e.target.closest("#archToggle")) setCustom({ archived: !custom.archived });
+  else if (e.target.closest("#customGo")) {
+    closeSheets();
+    startSession("custom");
+  }
+});
+
 function startSession(mode) {
   let ids;
   if (mode === "selected") {
     ids = shuffle(activeWords().filter((w) => w.selected).map((w) => w.id));
   } else {
-    ids = shuffle(words.map((w) => w.id)).slice(0, MIX_SIZE);
+    ids = shuffle(customPool().map((w) => w.id));
+    if (custom.count) ids = ids.slice(0, custom.count);
   }
   if (!ids.length) return;
   session = { mode, deck: ids, total: ids.length, known: 0, misses: 0, busy: false };
@@ -769,12 +923,11 @@ $("#closeSession").addEventListener("click", endSession);
 $("#backBtn").addEventListener("click", endSession);
 $("#againBtn").addEventListener("click", () => {
   const mode = session.mode;
-  const hasWords = mode === "selected" ? activeWords().some((w) => w.selected) : words.length > 0;
+  const hasWords = mode === "selected" ? activeWords().some((w) => w.selected) : customPool().length > 0;
   if (hasWords) startSession(mode);
   else endSession();
 });
 $("#startSelected").addEventListener("click", () => startSession("selected"));
-$("#startMix").addEventListener("click", () => startSession("mix"));
 
 // keyboard (handy on a computer)
 document.addEventListener("keydown", (e) => {

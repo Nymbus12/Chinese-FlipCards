@@ -10,6 +10,8 @@
   <meta property="og:type" content="website" />
   <meta name="theme-color" content="#f4f4f2" />
   <meta name="color-scheme" content="light" />
+  <!-- Google's speech endpoint refuses requests that carry a referrer -->
+  <meta name="referrer" content="no-referrer" />
 
   <!-- iPhone home-screen web app -->
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -59,7 +61,7 @@
 
     <footer class="start-bar">
       <button class="start-btn primary" id="startSelected"></button>
-      <button class="start-btn" id="startMix"></button>
+      <button class="start-btn" id="startCustom"></button>
     </footer>
   </main>
 
@@ -147,6 +149,20 @@
       iPhone only lets web apps use its basic voices, so downloaded voices such as Lili do not show here.
       For a more natural voice, choose Google Translate voice (needs internet).
     </p>
+  </div>
+
+  <div class="sheet" id="customSheet" hidden>
+    <div class="sheet-title">Custom session</div>
+    <div class="field-label">Number of cards</div>
+    <div class="seg" id="countSeg" role="group" aria-label="Number of cards"></div>
+    <button type="button" class="toggle-row" id="archToggle" role="switch" aria-checked="false">
+      <span class="toggle-text">
+        <span class="toggle-name">Include archived words</span>
+        <span class="toggle-sub" id="archSub"></span>
+      </span>
+      <span class="switch"></span>
+    </button>
+    <button type="button" class="start-btn primary custom-go" id="customGo"></button>
   </div>
 
   <div class="sheet" id="editSheet" hidden>

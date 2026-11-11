@@ -77,7 +77,10 @@ let audioEl = null;
 function speakGoogle(text, onFail) {
   if (!audioEl) audioEl = new Audio();
   audioEl.src = "https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=zh-CN&q=" + encodeURIComponent(text);
-  audioEl.playbackRate = Math.max(0.5, (RATES.find((r) => r.id === settings.rate) || RATES[1]).rate);
+  // Safari resets playbackRate when a new source loads, so set the default too
+  const rate = Math.max(0.5, (RATES.find((r) => r.id === settings.rate) || RATES[1]).rate);
+  audioEl.defaultPlaybackRate = rate;
+  audioEl.playbackRate = rate;
   audioEl.play().catch(() => onFail && onFail());
 }
 
