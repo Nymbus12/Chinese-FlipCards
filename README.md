@@ -6,6 +6,7 @@ A small, dependency-free flashcard web app for Chinese (Mandarin) vocabulary, ma
 
 - Add a Chinese word (or several, separated by spaces or commas). Pinyin is generated on the device with pinyin-pro; English is fetched automatically (Google Translate free endpoint, MyMemory as fallback) and can be edited.
 - Card front shows the characters, tap the empty card area to flip to pinyin. The Translate button on the pinyin side reveals the English. Speaker button below the card, next to Miss and Know.
+- Two study modes, chosen above the start buttons: **Flip cards** (characters on the front) and **Handwriting** (pinyin and meaning on the front with a box to write the characters by finger; Show answer flips to the characters so you can check yourself. Nothing you write is saved).
 - Know removes the card for the rest of the session (works before flipping too). Miss shuffles it back into the remaining deck.
 - Two session types: **Selected** (every selected, non-archived word) and **Custom** (pick how many random cards, 10 to all, and whether archived words are included).
 - Archive known words by swiping a word to the right (with Undo), from the word menu, or straight from a card. Swipe right in Archived to restore.

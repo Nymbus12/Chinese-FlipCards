@@ -169,6 +169,30 @@ $("#regenBtn").innerHTML = icon("refresh-cw", 18) + "Auto-fill";
 $('[data-menu="export"]').innerHTML = icon("download", 20) + "Export backup";
 $('[data-menu="import"]').innerHTML = icon("upload", 20) + "Import backup";
 $('[data-menu="voice"]').innerHTML = icon("volume-2", 20) + "Voice";
+$("#clearPad").innerHTML = icon("eraser", 18) + "Clear";
+$("#showAnswer").innerHTML = icon("eye", 18) + "Show answer";
+$('[data-mode="flip"]').innerHTML = icon("layers", 16) + "Flip cards";
+$('[data-mode="write"]').innerHTML = icon("pencil", 16) + "Handwriting";
+
+/* ---------- study mode: flip cards or handwriting ---------- */
+const MODE_KEY = "flipcards.mode";
+let studyMode = "flip";
+try {
+  if (localStorage.getItem(MODE_KEY) === "write") studyMode = "write";
+} catch {}
+function renderMode() {
+  document.querySelectorAll("[data-mode]").forEach((b) => b.classList.toggle("on", b.dataset.mode === studyMode));
+}
+renderMode();
+$("#modeSeg").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-mode]");
+  if (!b) return;
+  studyMode = b.dataset.mode;
+  try {
+    localStorage.setItem(MODE_KEY, studyMode);
+  } catch {}
+  renderMode();
+});
 
 /* =========================================================
    List view
@@ -781,7 +805,15 @@ function startSession(mode) {
     if (custom.count) ids = ids.slice(0, custom.count);
   }
   if (!ids.length) return;
-  session = { mode, deck: ids, total: ids.length, known: 0, misses: 0, busy: false };
+  const write = studyMode === "write";
+  session = { mode, write, deck: ids, total: ids.length, known: 0, misses: 0, busy: false };
+  card.classList.toggle("write", write);
+  $("#frontHanzi").hidden = write;
+  $("#writeFront").hidden = !write;
+  $("#frontLabel").textContent = write ? "Write" : "Chinese";
+  $("#backLabel").textContent = write ? "Answer" : "Pinyin";
+  $("#frontHint").textContent = write ? "Write it, then Show answer" : "Tap card to flip";
+  $("#backHint").textContent = write ? "Tap card to see your writing" : "Tap card to flip back";
   $("#listView").classList.remove("active");
   $("#sessionView").classList.add("active");
   showCard(false);
@@ -807,7 +839,13 @@ function renderTranslation() {
   if (!w) return;
   const btn = $("#translateBtn");
   const out = $("#translation");
-  if (session.revealed) {
+  if (session.write) {
+    // the meaning is the prompt, so it is always shown
+    const pending = inflight.has(w.id);
+    $("#writeEnglish").textContent = w.english || (pending ? "Translating…" : "");
+    if (!w.english && !pending) fillTranslation(w);
+  }
+  if (session.revealed || session.write) {
     if (w.english) {
       out.textContent = w.english;
       btn.hidden = true;
@@ -848,6 +886,11 @@ function showCard(animate = true) {
   fh.textContent = w.hanzi;
   fh.classList.toggle("long", w.hanzi.length > 3);
   $("#backHanzi").textContent = w.hanzi;
+  $("#backHanzi").classList.toggle("long", w.hanzi.length > 3);
+  if (session.write) {
+    $("#writePinyin").textContent = w.pinyin;
+    requestAnimationFrame(() => sizePad(w.hanzi)); // also wipes the last card's writing
+  }
   const py = $("#backPinyin");
   py.textContent = w.pinyin;
   py.classList.toggle("long", w.pinyin.length > 14);
@@ -892,13 +935,103 @@ function answer(kind) {
   }, 220);
 }
 
+/* ---------- writing box ---------- */
+const pad = $("#pad");
+const pctx = pad.getContext("2d");
+let padChars = 1;
+let stroke = null;
+
+function sizePad(hanzi) {
+  if (hanzi) padChars = Array.from(hanzi).length;
+  const r = pad.getBoundingClientRect();
+  if (!r.width || !r.height) return;
+  const d = window.devicePixelRatio || 1;
+  pad.width = Math.round(r.width * d);
+  pad.height = Math.round(r.height * d);
+  pctx.setTransform(d, 0, 0, d, 0, 0);
+  clearPad();
+}
+
+// one guide square per character (up to 4), with dashed centre lines like exercise paper
+function padCell() {
+  const w = pad.clientWidth;
+  const h = pad.clientHeight;
+  const n = Math.min(padChars, 4);
+  const size = Math.min(h - 16, (w - 16) / n);
+  return { n, size, x: (w - size * n) / 2, y: (h - size) / 2 };
+}
+function clearPad() {
+  pctx.clearRect(0, 0, pad.clientWidth, pad.clientHeight);
+  if (padChars > 4) return;
+  const { n, size, x, y } = padCell();
+  pctx.save();
+  pctx.lineWidth = 1;
+  for (let i = 0; i < n; i++) {
+    const cx = x + i * size;
+    pctx.strokeStyle = "#dcdcd8";
+    pctx.setLineDash([]);
+    pctx.strokeRect(cx + 0.5, y + 0.5, size - 1, size - 1);
+    pctx.strokeStyle = "#e7e7e4";
+    pctx.setLineDash([5, 5]);
+    pctx.beginPath();
+    pctx.moveTo(cx + size / 2, y);
+    pctx.lineTo(cx + size / 2, y + size);
+    pctx.moveTo(cx, y + size / 2);
+    pctx.lineTo(cx + size, y + size / 2);
+    pctx.stroke();
+  }
+  pctx.restore();
+}
+const padPoint = (e) => {
+  const r = pad.getBoundingClientRect();
+  return { x: e.clientX - r.left, y: e.clientY - r.top };
+};
+pad.addEventListener("pointerdown", (e) => {
+  e.preventDefault();
+  try {
+    pad.setPointerCapture(e.pointerId);
+  } catch {}
+  const p = padPoint(e);
+  const { size } = padCell();
+  stroke = { id: e.pointerId, last: p, width: Math.max(4, Math.min(12, (padChars > 4 ? 120 : size) * 0.05)) };
+  pctx.fillStyle = "#18181b";
+  pctx.beginPath();
+  pctx.arc(p.x, p.y, stroke.width / 2, 0, Math.PI * 2);
+  pctx.fill();
+});
+pad.addEventListener("pointermove", (e) => {
+  if (!stroke || e.pointerId !== stroke.id) return;
+  const pts = e.getCoalescedEvents ? e.getCoalescedEvents() : [e];
+  pctx.strokeStyle = "#18181b";
+  pctx.lineWidth = stroke.width;
+  pctx.lineCap = "round";
+  pctx.lineJoin = "round";
+  pctx.beginPath();
+  pctx.moveTo(stroke.last.x, stroke.last.y);
+  for (const pe of pts.length ? pts : [e]) {
+    const p = padPoint(pe);
+    pctx.lineTo(p.x, p.y);
+    stroke.last = p;
+  }
+  pctx.stroke();
+});
+const endStroke = (e) => {
+  if (stroke && e.pointerId === stroke.id) stroke = null;
+};
+pad.addEventListener("pointerup", endStroke);
+pad.addEventListener("pointercancel", endStroke);
+window.addEventListener("resize", () => session && session.write && sizePad());
+
 card.addEventListener("click", (e) => {
+  if (e.target.closest(".pad-wrap")) return; // writing never flips the card
   const b = e.target.closest("button");
   if (b) {
     const w = currentWord();
     if (!w) return;
     const act = b.dataset.act;
-    if (act === "translate") {
+    if (act === "clear") clearPad();
+    else if (act === "flip") card.classList.add("flipped");
+    else if (act === "translate") {
       session.revealed = true;
       if (!w.english) fillTranslation(w);
       renderTranslation();

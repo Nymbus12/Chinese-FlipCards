@@ -60,8 +60,14 @@
     </div>
 
     <footer class="start-bar">
-      <button class="start-btn primary" id="startSelected"></button>
-      <button class="start-btn" id="startCustom"></button>
+      <div class="seg mode-seg" id="modeSeg" role="group" aria-label="Study mode">
+        <button type="button" class="seg-btn" data-mode="flip"></button>
+        <button type="button" class="seg-btn" data-mode="write"></button>
+      </div>
+      <div class="start-row">
+        <button class="start-btn primary" id="startSelected"></button>
+        <button class="start-btn" id="startCustom"></button>
+      </div>
     </footer>
   </main>
 
@@ -80,18 +86,28 @@
           <div class="face front">
             <div class="face-top">
               <button class="icon-btn ghost" data-act="archive" aria-label="Archive"></button>
-              <span class="side-label">Chinese</span>
+              <span class="side-label" id="frontLabel">Chinese</span>
               <span class="icon-space"></span>
             </div>
             <div class="face-body">
               <div class="hanzi" id="frontHanzi"></div>
+              <!-- handwriting mode: prompt and drawing box -->
+              <div class="write-front" id="writeFront" hidden>
+                <div class="write-py" id="writePinyin"></div>
+                <div class="write-en" id="writeEnglish"></div>
+                <div class="pad-wrap"><canvas id="pad" aria-label="Writing box"></canvas></div>
+                <div class="pad-actions">
+                  <button type="button" class="pill-btn" data-act="clear" id="clearPad"></button>
+                  <button type="button" class="pill-btn dark" data-act="flip" id="showAnswer"></button>
+                </div>
+              </div>
             </div>
-            <div class="face-hint">Tap card to flip</div>
+            <div class="face-hint" id="frontHint">Tap card to flip</div>
           </div>
           <div class="face back">
             <div class="face-top">
               <button class="icon-btn ghost" data-act="archive" aria-label="Archive"></button>
-              <span class="side-label">Pinyin</span>
+              <span class="side-label" id="backLabel">Pinyin</span>
               <span class="icon-space"></span>
             </div>
             <div class="face-body">
@@ -100,7 +116,7 @@
               <div class="translation" id="translation"></div>
               <button class="pill-btn" data-act="translate" id="translateBtn"></button>
             </div>
-            <div class="face-hint">Tap card to flip back</div>
+            <div class="face-hint" id="backHint">Tap card to flip back</div>
           </div>
         </div>
       </div>
