@@ -63,6 +63,9 @@ body {
   overscroll-behavior: none;
   touch-action: manipulation;
 }
+/* app feel: holding text never selects it or opens the iPhone copy menu; typing fields still can */
+body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+input, textarea { -webkit-user-select: text; user-select: text; -webkit-touch-callout: default; }
 button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
 input, textarea { font: inherit; color: inherit; }
 svg { display: block; flex-shrink: 0; }
