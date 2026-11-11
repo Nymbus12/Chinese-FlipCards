@@ -169,6 +169,41 @@ $("#regenBtn").innerHTML = icon("refresh-cw", 18) + "Auto-fill";
 $('[data-menu="export"]').innerHTML = icon("download", 20) + "Export backup";
 $('[data-menu="import"]').innerHTML = icon("upload", 20) + "Import backup";
 $('[data-menu="voice"]').innerHTML = icon("volume-2", 20) + "Voice";
+$('[data-menu="theme"]').innerHTML = icon("palette", 20) + "Theme";
+
+/* ---------- theme ---------- */
+const THEME_KEY = "flipcards.theme";
+const THEMES = [
+  { id: "cinnabar", name: "Cinnabar", sub: "Seal red on cool grey", colors: ["#f5f6f8", "#ffffff", "#eceef2", "#d23b2f"] },
+  { id: "sage", name: "Sage", sub: "Soft green on warm cream", colors: ["#faf1e6", "#fdfaf6", "#e4efe7", "#99bc85"] },
+];
+const currentTheme = () => document.documentElement.dataset.theme || "cinnabar";
+function applyTheme(id) {
+  if (id === "cinnabar") delete document.documentElement.dataset.theme;
+  else document.documentElement.dataset.theme = id;
+  try {
+    localStorage.setItem(THEME_KEY, id);
+  } catch {}
+  // match the iPhone status bar area to the background
+  $('meta[name="theme-color"]').content = getComputedStyle(document.documentElement).getPropertyValue("--bg").trim();
+}
+function renderThemes() {
+  $("#themeList").innerHTML = THEMES.map((t) => {
+    const on = currentTheme() === t.id;
+    return `<li><button type="button" class="voice-row ${on ? "on" : ""}" data-theme-id="${t.id}">
+      <span class="voice-check">${on ? icon("check", 18, 2.4) : ""}</span>
+      <span class="voice-text"><span class="voice-name">${t.name}</span><span class="voice-sub">${t.sub}</span></span>
+      <span class="swatches">${t.colors.map((c) => `<i style="background:${c}"></i>`).join("")}</span>
+    </button></li>`;
+  }).join("");
+}
+$("#themeSheet").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-theme-id]");
+  if (!b) return;
+  applyTheme(b.dataset.themeId);
+  renderThemes();
+});
+$('meta[name="theme-color"]').content = getComputedStyle(document.documentElement).getPropertyValue("--bg").trim();
 $("#clearPad").innerHTML = icon("eraser", 18) + "Clear";
 $("#showAnswer").innerHTML = icon("eye", 18) + "Show answer";
 $('[data-mode="flip"]').innerHTML = icon("layers", 16) + "Flip cards";
@@ -539,6 +574,21 @@ function endSwipe(e, cancelled) {
 }
 wordList.addEventListener("pointerup", (e) => endSwipe(e, false));
 wordList.addEventListener("pointercancel", (e) => endSwipe(e, true));
+// iPhone: once a drag is clearly sideways, stop Safari from scrolling or rubber-banding the list,
+// so only the row moves (pointer events keep coming)
+let touch0 = null;
+wordList.addEventListener("touchstart", (e) => {
+  const t = e.touches[0];
+  touch0 = e.touches.length === 1 ? { x: t.clientX, y: t.clientY, lock: null } : null;
+}, { passive: true });
+wordList.addEventListener("touchmove", (e) => {
+  if (!touch0) return;
+  const t = e.touches[0];
+  const dx = t.clientX - touch0.x;
+  const dy = t.clientY - touch0.y;
+  if (!touch0.lock && (Math.abs(dx) > 6 || Math.abs(dy) > 6)) touch0.lock = Math.abs(dx) > Math.abs(dy) ? "x" : "y";
+  if (touch0.lock === "x" && e.cancelable) e.preventDefault();
+}, { passive: false });
 // a swipe should not also tick the checkbox or press a button
 wordList.addEventListener("click", (e) => {
   if (Date.now() - swipedAt < 400) e.stopPropagation();
@@ -688,6 +738,10 @@ $("#menuSheet").addEventListener("click", async (e) => {
   if (!b) return;
   if (b.dataset.menu === "import") return $("#importFile").click();
   if (b.dataset.menu === "voice") return openVoice();
+  if (b.dataset.menu === "theme") {
+    renderThemes();
+    return openSheet("#themeSheet");
+  }
   closeSheets();
   const json = JSON.stringify({ version: 1, exportedAt: new Date().toISOString(), words }, null, 2);
   const name = `flipcards-${new Date().toISOString().slice(0, 10)}.json`;
@@ -830,7 +884,6 @@ function endSession() {
 function renderProgress() {
   const s = session;
   $("#progressText").textContent = s.deck.length ? `${s.deck.length} left` : "Done";
-  $("#knownCount").innerHTML = `${icon("check", 16, 2.6)}${s.known}`;
   $("#progressFill").style.width = `${(s.known / s.total) * 100}%`;
 }
 
@@ -937,6 +990,7 @@ function answer(kind) {
 
 /* ---------- writing box ---------- */
 const pad = $("#pad");
+const cssVar = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 const pctx = pad.getContext("2d");
 let padChars = 1;
 let stroke = null;
@@ -968,10 +1022,10 @@ function clearPad() {
   pctx.lineWidth = 1;
   for (let i = 0; i < n; i++) {
     const cx = x + i * size;
-    pctx.strokeStyle = "#d9dde3";
+    pctx.strokeStyle = cssVar("--pad-line");
     pctx.setLineDash([]);
     pctx.strokeRect(cx + 0.5, y + 0.5, size - 1, size - 1);
-    pctx.strokeStyle = "#e4e7ec";
+    pctx.strokeStyle = cssVar("--pad-dash");
     pctx.setLineDash([5, 5]);
     pctx.beginPath();
     pctx.moveTo(cx + size / 2, y);
@@ -994,7 +1048,7 @@ pad.addEventListener("pointerdown", (e) => {
   const p = padPoint(e);
   const { size } = padCell();
   stroke = { id: e.pointerId, last: p, width: Math.max(4, Math.min(12, (padChars > 4 ? 120 : size) * 0.05)) };
-  pctx.fillStyle = "#14161a";
+  pctx.fillStyle = cssVar("--text");
   pctx.beginPath();
   pctx.arc(p.x, p.y, stroke.width / 2, 0, Math.PI * 2);
   pctx.fill();
@@ -1002,7 +1056,7 @@ pad.addEventListener("pointerdown", (e) => {
 pad.addEventListener("pointermove", (e) => {
   if (!stroke || e.pointerId !== stroke.id) return;
   const pts = e.getCoalescedEvents ? e.getCoalescedEvents() : [e];
-  pctx.strokeStyle = "#14161a";
+  pctx.strokeStyle = cssVar("--text");
   pctx.lineWidth = stroke.width;
   pctx.lineCap = "round";
   pctx.lineJoin = "round";
