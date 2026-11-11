@@ -157,7 +157,6 @@ function shuffle(arr) {
    Static icons
    ========================================================= */
 $("#menuBtn").innerHTML = icon("ellipsis");
-$("#addBtn").innerHTML = icon("plus");
 $("#closeSession").innerHTML = icon("x");
 $("#missBtn").innerHTML = icon("x", 30, 2.4);
 $("#knowBtn").innerHTML = icon("check", 30, 2.4);
@@ -206,7 +205,7 @@ $("#themeSheet").addEventListener("click", (e) => {
 $('meta[name="theme-color"]').content = getComputedStyle(document.documentElement).getPropertyValue("--bg").trim();
 $("#clearPad").innerHTML = icon("eraser", 18) + "Clear";
 $("#showAnswer").innerHTML = icon("eye", 18) + "Show answer";
-$('[data-mode="flip"]').innerHTML = icon("layers", 16) + "Flip cards";
+$('[data-mode="flip"]').innerHTML = icon("book-open", 16) + "Vocabulary";
 $('[data-mode="write"]').innerHTML = icon("pencil", 16) + "Handwriting";
 
 /* ---------- study mode: flip cards or handwriting ---------- */
@@ -295,7 +294,7 @@ function renderList() {
       : "Archived words show here. Archive a word you know well so it stops coming up in your selected sessions.";
 
   // start buttons
-  $("#startSelected").innerHTML = `${icon("layers", 19)}Selected <small>${selectedCount}</small>`;
+  $("#startSelected").innerHTML = `${icon("list-checks", 19)}Selected <small>${selectedCount}</small>`;
   $("#startSelected").disabled = selectedCount === 0;
   $("#startCustom").innerHTML = `${icon("sliders-horizontal", 19)}Custom`;
   $("#startCustom").disabled = words.length === 0;
@@ -372,8 +371,28 @@ $("#addForm").addEventListener("submit", (e) => {
     updateSuggest();
   } else hideSuggest();
 });
-// tapping + must not take focus from the field (that would close the reading list)
-$("#addBtn").addEventListener("mousedown", (e) => e.preventDefault());
+// the button is + while the field is empty (tap = start typing) and x once there is text (tap = clear)
+const addBtn = $("#addBtn");
+function syncAddBtn() {
+  const has = !!$("#addInput").value;
+  if (addBtn.dataset.state === (has ? "clear" : "add")) return;
+  addBtn.dataset.state = has ? "clear" : "add";
+  addBtn.innerHTML = icon(has ? "x" : "plus");
+  addBtn.setAttribute("aria-label", has ? "Clear" : "Add word");
+}
+// tapping the button must not take focus from the field (that would close the list)
+addBtn.addEventListener("mousedown", (e) => e.preventDefault());
+syncAddBtn();
+// iPhone Safari only shows :active (press) styles when the page listens for touches
+document.addEventListener("touchstart", () => {}, { passive: true });
+addBtn.addEventListener("click", () => {
+  const input = $("#addInput");
+  if (input.value) {
+    input.value = "";
+    hideSuggest();
+  }
+  input.focus();
+});
 
 /* ---------- suggestions: type pinyin or English, pick a Chinese word ---------- */
 const addInput = $("#addInput");
@@ -388,13 +407,15 @@ function hideSuggest() {
   sugItems = [];
   sugEl.hidden = true;
   sugEl.innerHTML = "";
+  syncAddBtn();
 }
 
-function renderSuggest(items, loading, title = "") {
+function renderSuggest(items, loading, title = "", addAll = 0) {
   sugItems = items;
   const rows = items.map((it, i) => {
     const have = words.some((w) => w.hanzi === it.hanzi);
-    return `<li><button type="button" class="sug ${have ? "added" : ""}" data-i="${i}" ${have ? 'aria-disabled="true"' : ""}>
+    const heading = it.heading ? `<li class="sug-title">${esc(it.heading)}</li>` : "";
+    return `${heading}<li><button type="button" class="sug ${have ? "added" : ""}" data-i="${i}" ${have ? 'aria-disabled="true"' : ""}>
       <span class="sug-text">
         <span class="sug-line"><span class="sug-zh" lang="zh-CN">${esc(it.hanzi)}</span><span class="sug-py">${esc(it.pinyin)}</span></span>
         <span class="sug-en">${it.english ? esc(it.english) : "Translation added after you pick it"}</span>
@@ -403,6 +424,10 @@ function renderSuggest(items, loading, title = "") {
       <span class="sug-icon">${icon(have ? "check" : "plus", 20)}</span>
     </button></li>`;
   });
+  if (addAll > 1)
+    rows.unshift(`<li><button type="button" class="sug sug-all" data-all="1">
+      <span class="sug-text"><span class="sug-name">Add all ${addAll} words</span></span>
+      <span class="sug-icon">${icon("plus", 20)}</span></button></li>`);
   if (title) rows.unshift(`<li class="sug-title">${esc(title)}</li>`);
   if (loading) rows.push(`<li class="sug-status"><span class="spin">${icon("loader-circle", 16)}</span>Searching online</li>`);
   else if (!items.length) rows.push(`<li class="sug-status">No matching Chinese word</li>`);
@@ -422,16 +447,27 @@ window.visualViewport?.addEventListener("resize", fitSuggest);
 
 async function updateSuggest() {
   const q = addInput.value;
+  syncAddBtn();
   if (!q.trim()) return hideSuggest();
   const seq = ++sugSeq;
   await loadDict();
   if (seq !== sugSeq) return;
   if (HAN.test(q)) {
-    // Chinese typed: only show a list when a word has several readings to choose from
-    const items = ambiguous(q).flatMap(readings);
+    // Chinese typed: list each word to tap; words with several readings list each reading
+    const amb = ambiguous(q);
+    const plain = [...new Set(splitWords(q))]
+      .filter((h) => HAN.test(h) && !amb.includes(h))
+      .map((h) => {
+        const d = lookup(h);
+        return { hanzi: h, pinyin: d ? d.pinyin : toPinyin(h), english: d ? d.english : "", level: d ? d.level : 0 };
+      });
+    const readingItems = amb.flatMap(readings);
+    if (readingItems.length) readingItems[0] = { ...readingItems[0], heading: "More than one reading. Pick one:" };
+    const items = [...plain, ...readingItems];
     if (!items.length) return hideSuggest();
     clearTimeout(sugTimer);
-    return renderSuggest(items, false, "More than one reading. Pick one:");
+    const newPlain = plain.filter((it) => !words.some((w) => w.hanzi === it.hanzi)).length;
+    return renderSuggest(items, false, plain.length ? "Tap to add" : "", newPlain);
   }
   const online = navigator.onLine && q.trim().length >= 2;
   renderSuggest(suggest(q), online);
@@ -452,6 +488,12 @@ sugEl.addEventListener("mousedown", (e) => e.preventDefault());
 sugEl.addEventListener("click", (e) => {
   const b = e.target.closest(".sug");
   if (!b) return;
+  if (b.dataset.all) {
+    // same as pressing Done: add every new word, keep any that still need a reading picked
+    const pick = addWords(addInput.value);
+    addInput.value = pick.join(" ");
+    return pick.length ? updateSuggest() : hideSuggest();
+  }
   const it = sugItems[+b.dataset.i];
   if (!it) return;
   if (words.some((w) => w.hanzi === it.hanzi)) return toast(`${it.hanzi} is already in your list`);

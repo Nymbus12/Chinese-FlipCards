@@ -111,7 +111,7 @@ svg { display: block; flex-shrink: 0; }
 }
 .add-form input::placeholder { color: var(--muted); font-family: var(--font); }
 
-.tabs { display: flex; gap: 4px; margin: 20px 0 6px; background: var(--soft); border-radius: 10px; padding: 4px; }
+.tabs { display: flex; gap: 4px; margin: 12px 0 4px; background: var(--soft); border-radius: 10px; padding: 4px; }
 .tab { flex: 1; padding: 9px 0; border-radius: 7px; font-size: 14px; font-weight: 500; color: var(--muted); }
 .tab span { font-weight: 400; margin-left: 2px; }
 .tab.active { background: var(--card); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
@@ -131,9 +131,8 @@ svg { display: block; flex-shrink: 0; }
 }
 /* unticked words fade back so the selected ones stand out */
 .word-card { transition: background 0.15s, box-shadow 0.15s; }
-.word.off .word-card { background: transparent; box-shadow: inset 0 0 0 1px var(--line); }
+.word.off .word-card { background: var(--bg); box-shadow: inset 0 0 0 1px var(--line); } /* page colour, so it stays muted while swiping */
 .word.off .word-text, .word.off .icon-btn.ghost { opacity: 0.45; transition: opacity 0.15s; }
-.word.swiping.off .word-card { background: var(--card); }
 .word.swiping .word-card, body.no-select { user-select: none; -webkit-user-select: none; }
 .swipe-bg {
   position: absolute; inset: 0; border-radius: 10px; display: none;
@@ -160,7 +159,7 @@ svg { display: block; flex-shrink: 0; }
   background: var(--bg);
 }
 .start-row { display: flex; gap: 10px; }
-.mode-seg { margin: 0; }
+.start-bar .mode-seg { margin: 0; } /* same width as the buttons below */
 .mode-seg .seg-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 34px; }
 .start-btn {
   flex: 1; height: 54px; border-radius: 10px;
@@ -338,6 +337,7 @@ svg { display: block; flex-shrink: 0; }
 .sug.added { cursor: default; }
 .sug.added .sug-icon { background: var(--soft); color: var(--muted); }
 .sug-status { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px; font-size: 13px; color: var(--muted); }
+.sug-name { font-size: 15px; font-weight: 600; }
 .sug-title { padding: 10px 10px 6px; font-size: 13px; color: var(--muted); }
 
 /* ---------- voice picker ---------- */
