@@ -1249,6 +1249,14 @@ document.addEventListener("keydown", (e) => {
    ========================================================= */
 renderList();
 loadDict();
+
+// splash: a short welcome while the app starts, then fade out
+setTimeout(() => {
+  const sp = $("#splash");
+  sp.classList.add("done");
+  setTimeout(() => (sp.hidden = true), 400);
+}, 1000);
+
 // retry any translations that failed while offline
 words.filter((w) => !w.english).forEach(fillTranslation);
 window.addEventListener("online", () => words.filter((w) => !w.english).forEach(fillTranslation));

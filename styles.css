@@ -385,3 +385,26 @@ svg { display: block; flex-shrink: 0; }
 .about-body { padding: 2px 12px 12px; }
 .about-body p { margin: 10px 0 0; font-size: 15px; line-height: 1.5; }
 .about-body a { color: var(--accent); font-weight: 500; }
+
+/* ---------- splash ---------- */
+.splash {
+  position: fixed; inset: 0; z-index: 50;
+  background: var(--bg);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
+  padding-bottom: calc(var(--safe-bottom) + 24px);
+  transition: opacity 0.35s ease;
+}
+.splash.done { opacity: 0; pointer-events: none; }
+.splash-mark { width: 76px; height: 76px; border-radius: 18px; margin-bottom: 6px; }
+.splash-name { font-size: 28px; font-weight: 700; letter-spacing: -0.02em; }
+.splash-tag { font-size: 14px; color: var(--muted); }
+.splash-bar {
+  width: min(220px, 60vw); height: 4px; border-radius: 4px;
+  background: var(--soft); overflow: hidden; margin-top: 20px;
+}
+.splash-bar i {
+  display: block; height: 100%; border-radius: 4px; background: var(--accent);
+  transform-origin: left; transform: scaleX(0);
+  animation: splash-fill 0.85s ease-out 0.1s forwards;
+}
+@keyframes splash-fill { to { transform: scaleX(1); } }
